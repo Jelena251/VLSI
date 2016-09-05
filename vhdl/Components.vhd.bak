@@ -1,0 +1,149 @@
+library ieee;	
+library work;		
+
+use ieee.std_logic_1164.all;
+use work.data_types.all;		
+
+package Components is	
+
+	component cpu is
+		port
+			(
+			
+				clk, rst : in std_logic;
+				
+				pc_start : in address_def;
+				data_instr_in : in word_def;
+				data_instr_out : out instr_mem_signal;
+				data_mem_out : out data_mem_signal;
+				data_mem_in : in word_def
+				--data_pred_out : out address_def;
+				--data_pred_in : in pred_if_out_signal;
+				--data_pred_out_ex : out pred_ex_in_signal
+			);
+	end component;
+	
+	component instruction_fetch is
+		port
+			(
+				clk : in std_logic;
+				rst : in std_logic;
+				
+				pc_start : in address_def;
+				--data_in : in if_in_signal;
+				flush_from_mem : in std_logic;
+				pc_mem : in word_def;
+				stall : in std_logic;
+				data_out : out if_out_signal;
+				data_inst_out : out instr_mem_signal;
+				data_pred_out : out address_def;
+				data_pred_in : in pred_if_out_signal;
+
+				is_halt_in : in std_logic
+			);
+	end component;
+	
+	component instruction_decode is
+		port
+			(
+				clk : in std_logic;
+				rst : in std_logic;
+				
+				stall : out std_logic;
+				flush_from_mem : in std_logic;
+				flush_from_pred : in std_logic;
+				data_in : in if_out_signal;
+				data_instr_in : in word_def;
+				data_out : out id_out_signal;
+				data_out_fwd : out forwd_id_in_signal;
+				data_in_fwd : in forwd_out_signal; 
+				data_in_wb : in wb_out_signal
+			);
+	end component;
+	
+	component execute is
+		port
+			(
+				clk, rst : in std_logic;
+				data_in : in id_out_signal;
+				data_out : out ex_out_signal;
+				flush_from_mem : in std_logic;
+				data_out_fwd : out forwd_in_signal;
+				--data_ret_addr : out if_in_signal;
+				data_pred_out : out pred_ex_in_signal
+			);
+	end component;
+	
+	component memory is
+		port
+			(
+				clk, rst : in std_logic;
+				
+				flush_from_mem : out std_logic;
+				pc_mem : out word_def;
+				data_in : in ex_out_signal;
+				data_out : out mem_out_signal;
+				data_out_fwd : out forwd_in_signal;
+				data_mem_out : out data_mem_signal;
+				data_mem_in : in word_def;
+
+				is_halt_out : out std_logic
+			);
+	end component;
+	
+	component write_back is
+		port
+			(
+				clk, rst : in std_logic;
+				
+				data_in : in mem_out_signal;
+				data_out : out wb_out_signal
+			);
+	end component;
+	
+	component data_cache is
+		port
+			(
+				clk, rst : in std_logic;
+				
+				data_in : in data_mem_signal;
+				data_out : out word_def
+			);
+	end component;
+	
+	component instr_cache is
+		port
+			(
+				clk, rst : in std_logic;
+				
+				addr : in instr_mem_signal;
+				data_out : out word_def;
+				pc_start : out word_def
+			);
+	end component;
+	
+	component prediction_unit is
+	port
+		(
+			addr_in_if : in address_def;
+			data_in_ex : in pred_ex_in_signal;
+			data_out_if : out pred_if_out_signal;
+	
+			clk, rst : in std_logic
+		);
+	end component;
+	
+	component forward_unit is
+	port
+		(
+			data_ex_in : in forwd_in_signal;
+			data_mem_in : in forwd_in_signal;
+			data_id_in : in forwd_id_in_signal;
+			data_out: out forwd_out_signal
+		);
+	end component;
+	
+	
+end package;
+	
+	
